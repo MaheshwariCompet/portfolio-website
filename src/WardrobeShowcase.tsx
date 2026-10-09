@@ -45,7 +45,7 @@ const Flow = ({ steps }: { steps: string[] }) => (
 );
 
 /* One comic panel. Panel 1 is the headshot alone; Panels 2-4 carry the project story. */
-function FaceCard({ f, n, image, name }: { f: Face; n: number; image?: string; name?: string }) {
+function FaceCard({ f, image, name }: { f: Face; image?: string; name?: string }) {
   const frame = "h-full w-full select-none overflow-hidden border-[3px] border-amber-500 bg-[#1f160d] shadow-[6px_6px_0_#5a3412]";
   if (f.key === "photo")
     return (
@@ -164,7 +164,7 @@ export default function WardrobeShowcase({ image, name }: { image?: string; name
           {FACES.map((f, k) => (
             <div key={f.key} className="absolute inset-0 [backface-visibility:hidden]"
               style={{ transform: `rotateY(${k * 90}deg) translateZ(calc(var(--w) / 2))` }}>
-              <FaceCard f={f} n={k + 1} image={image} name={name} />
+              <FaceCard f={f} image={image} name={name} />
             </div>
           ))}
         </motion.div>
