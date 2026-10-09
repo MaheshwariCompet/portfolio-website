@@ -6,9 +6,13 @@ import {
 import type { IconType } from "react-icons";
 import {
   FiArrowUpRight, FiDownload, FiExternalLink, FiTerminal, FiChevronDown,
-  FiLayers, FiServer, FiCloud, FiDatabase, FiShield, FiCpu, FiPhone, FiMail
+  FiLayers, FiServer, FiCloud, FiDatabase, FiShield, FiCpu, FiPhone, FiMail,
+  FiCalendar, FiRadio, FiZap, FiMessageSquare, FiTrendingUp, FiBell, FiMonitor, FiAward,
 } from "react-icons/fi";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import WardrobeShowcase from "./WardrobeShowcase";
+import ArchitectureDiagrams from "./ArchitectureDiagrams";
+import SkillWheel from "./SkillWheel";
 
 /* ===== Edit these ===== */
 // Put your photo in src/assets and import it, e.g.
@@ -80,6 +84,8 @@ const SKILLS: { group: string; icon: IconType; tags: string[] }[] = [
 type Project = {
   name: string; client: string; blurb: string; stack: string[];
   points: string[]; github?: string; demo?: string; layers: string[];
+  /* Optional: one entry per item in `points` (same order). Gives each point an icon + short headline for the impact cards. */
+  impact?: { icon: IconType; title: string; badge?: string }[];
 };
 const PROJECTS: Project[] = [
   {
@@ -95,6 +101,14 @@ const PROJECTS: Project[] = [
       "SMS Send Invite system to add third-party users to live interpretations directly.",
       "Interpretation Scheduled API performance optimization.",
     ],
+    impact: [
+      { icon: FiShield, title: "Role-based status features" },
+      { icon: FiCalendar, title: "Timezone-aware scheduling" },
+      { icon: FiRadio, title: "Real-time status alerts" },
+      { icon: FiZap, title: "Faster frontend" },
+      { icon: FiMessageSquare, title: "SMS invites to live calls" },
+      { icon: FiTrendingUp, title: "Faster scheduling API" },
+    ],
     layers: ["Client · React", "API · ASP.NET Core", "Data · SQL Server", "Cloud · Azure"],
   },
   {
@@ -108,9 +122,16 @@ const PROJECTS: Project[] = [
       "Upgraded legacy portal screens with Bootstrap, VB.NET stored-procedure integration and DevExpress sorting and filtering.",
       "Completed the leave module ahead of schedule while the lead was unavailable, earning broader responsibility.",
     ],
+    impact: [
+      { icon: FiServer, title: "Leave-management API" },
+      { icon: FiBell, title: "FCM leave alerts" },
+      { icon: FiMonitor, title: "Legacy portal upgrade" },
+      { icon: FiAward, title: "Delivered ahead of schedule", badge: "Standout" },
+    ],
     layers: ["Portal · Bootstrap", "API · .NET Core", "Data · SQL Server", "Mobile · FCM"],
   },
 ];
+
 
 /* ---------- Scroll-linked 3D stage ---------- */
 function Stage({ id, tag, children }: { id: string; tag?: string; children: ReactNode }) {
@@ -253,21 +274,14 @@ function Hero() {
           </div>
         </div>
 
-        {/* Profile picture slot (original position) */}
+        {/* Profile picture area: auto-rotating comic cube. Panel 1 carries the headshot. */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, rotateY: 30 }} animate={{ opacity: 1, scale: 1, rotateY: 0 }} transition={{ ...spring, delay: 0.2 }}
-          className="relative mx-auto h-64 w-64 md:h-80 md:w-80"
+          initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring, delay: 0.2 }}
+          className="relative mx-auto flex flex-col items-center"
         >
-          <div className="relative h-full w-full -rotate-2 overflow-hidden border-4 border-amber-500 bg-[#0B0A0F] shadow-[8px_8px_0_#22E6F2]">
-            {PROFILE_IMG ? (
-              <img src={PROFILE_IMG} alt={PROFILE.name} className="h-full w-full object-cover object-[center_34%]" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center font-comic text-6xl text-cyan-300">MA</div>
-            )}
+          <div className="relative">
+            <WardrobeShowcase image={PROFILE_IMG} name={PROFILE.name} />
           </div>
-          <span aria-hidden className="absolute -right-6 -top-8 z-10 flex h-24 w-24 rotate-12 items-center justify-center bg-amber-400 font-comic text-xl text-black [clip-path:polygon(50%_0%,61%_20%,80%_10%,78%_32%,100%_38%,84%_55%,96%_75%,74%_77%,70%_100%,50%_85%,30%_100%,26%_77%,4%_75%,16%_55%,0%_38%,22%_32%,20%_10%,39%_20%)]">
-            HELLO!
-          </span>
         </motion.div>
       </div>
 
@@ -328,46 +342,18 @@ function Experience() {
           </motion.article>
         ))}
       </div>
+      <ArchitectureDiagrams />
     </>
   );
 }
 
 /* ---------- Skills ---------- */
-function FloatingTag({ i, progress, children }: { i: number; progress: MotionValue<number>; children: ReactNode }) {
-  const dir = i % 2 === 0 ? 1 : -1;
-  const y = useTransform(progress, [0, 1], [30 * dir, -30 * dir]);
-  return (
-    <motion.span style={{ y }} whileHover={{ scale: 1.1 }} transition={spring}
-      className="cursor-default rounded-sm border border-cyan-500/10 bg-cyan-500/[0.06] px-3 py-1.5 text-xs text-cyan-200 backdrop-blur-md transition-colors hover:border-cyan-400/50 hover:bg-cyan-500/20 hover:shadow-[4px_4px_0_#5a3412]">
-      {children}
-    </motion.span>
-  );
-}
-
 function Skills() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const progress = useSpring(scrollYProgress, smooth);
   return (
-    <div ref={ref}>
-      <Heading title="Tools & Skills" />
-      <div className="grid gap-5 md:grid-cols-2">
-        {SKILLS.map((g, gi) => (
-          <motion.div key={g.group}
-            initial={{ opacity: 0, y: 60, rotateX: 20 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-            viewport={{ once: true, margin: "-60px" }} transition={{ ...spring, delay: (gi % 2) * 0.06 }}
-            className={`rounded-sm p-6 ${glass}`}>
-            <div className="mb-5 flex items-center gap-3">
-              <span className="rounded-sm bg-cyan-500/10 p-2 text-cyan-400 shadow-[4px_4px_0_#5a3412]"><g.icon className="h-5 w-5" /></span>
-              <h3 className="font-comic font-normal tracking-wider text-2xl  text-white">{g.group}</h3>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {g.tags.map((t, ti) => <FloatingTag key={t} i={ti + gi} progress={progress}>{t}</FloatingTag>)}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
+    <>
+      <Heading title="Tools & Skills" sub="Spin the wheel to see what is in each part of the toolkit." />
+      <SkillWheel groups={SKILLS} />
+    </>
   );
 }
 
@@ -391,6 +377,28 @@ function IsoBlocks({ layers, progress, flip }: { layers: string[]; progress: Mot
   );
 }
 
+function ImpactGrid({ items }: { items: { icon: IconType; title: string; text: string; badge?: string }[] }) {
+  return (
+    <div className="mt-6 grid gap-3 sm:grid-cols-2 [perspective:900px]">
+      {items.map(({ icon: Icon, title, text, badge }, i) => (
+        <motion.div key={title}
+          initial={{ opacity: 0, y: 30, rotateX: 20 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          viewport={{ once: true, margin: "-40px" }} transition={{ ...spring, delay: i * 0.07 }}
+          whileHover={{ y: -4, x: -2 }}
+          className="relative flex flex-col gap-2 border-[3px] border-amber-500 bg-[#2a1d11] p-3.5 shadow-[4px_4px_0_#5a3412] transition-shadow hover:shadow-[7px_7px_0_#22E6F2]">
+          <span aria-hidden className="absolute right-2 top-1.5 font-comic text-xs tracking-widest text-amber-500/60">{String(i + 1).padStart(2, "0")}</span>
+          <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-amber-400 text-black shadow-[2px_2px_0_#22E6F2]">
+            <Icon className="h-5 w-5" aria-hidden />
+          </span>
+          <h4 className="font-comic text-lg leading-tight tracking-wide text-cyan-300">{title}</h4>
+          {badge && <span className="self-start border-2 border-black bg-cyan-400 px-1.5 font-comic text-xs tracking-wider text-black">{badge}</span>}
+          <p className="text-[12px] leading-relaxed text-zinc-400">{text}</p>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 function ProjectPanel({ p, index }: { p: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -402,11 +410,15 @@ function ProjectPanel({ p, index }: { p: Project; index: number }) {
         <div className="text-xs text-cyan-400">{p.client}</div>
         <h3 className="mt-2 font-comic font-normal tracking-wider text-3xl   text-white">{p.name}</h3>
         <p className="mt-4 text-sm leading-relaxed text-zinc-400">{p.blurb}</p>
-        <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-zinc-300">
-          {p.points.map((pt) => (
-            <li key={pt} className="flex gap-3"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-cyan-500" />{pt}</li>
-          ))}
-        </ul>
+        {p.impact ? (
+          <ImpactGrid items={p.impact.map((m, i) => ({ ...m, text: p.points[i] }))} />
+        ) : (
+          <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-zinc-300">
+            {p.points.map((pt) => (
+              <li key={pt} className="flex gap-3"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-cyan-500" />{pt}</li>
+            ))}
+          </ul>
+        )}
         <div className="mt-6 flex flex-wrap gap-2">
           {p.stack.map((s) => (
             <span key={s} className="rounded-md border border-cyan-500/10 bg-cyan-500/[0.06] px-2.5 py-1 text-[11px] text-cyan-200">{s}</span>
@@ -447,6 +459,7 @@ function Projects() {
     </>
   );
 }
+
 
 /* ---------- Contact ---------- */
 type Line = { t: "in" | "out" | "err"; v: string };
