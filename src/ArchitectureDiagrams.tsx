@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { IconType } from "react-icons";
+import { FiMonitor, FiServer, FiDatabase, FiFolder, FiRadio, FiZap, FiShield, FiWifiOff, FiCloudOff, FiGlobe } from "react-icons/fi";
 import MermaidDiagram from "./MermaidDiagram";
 
 /* Reconstructed from the responsibilities listed for the Eleviant Tech role (May 2022 - Oct 2025).
@@ -78,24 +80,85 @@ const TABS = [
     note: "Simplified illustration with generic column names, not the production schema." },
 ];
 
-const BREAKDOWN: [string, string][] = [
-  ["Presentation", "React + TypeScript single-page app with reusable components and React lazy loading for faster first load."],
-  ["API", "ASP.NET Core Web API (C#/.NET) exposing REST endpoints for business-critical workflows, with role-based access control across multiple user roles."],
-  ["Data", "SQL Server with master, mapping and transaction tables, stored procedures, and tuned queries and indexes."],
-  ["Files", "Azure Blob Storage for application file management."],
-  ["Real-time and messaging", "PubNub for live status updates; Twilio and other third-party services for communication; Firebase Cloud Messaging for push notifications in the earlier leave-management work."],
-  ["Caching and queues", "None claimed. Performance came from SQL indexing and query tuning, React lazy loading and frontend optimisation."],
-  ["Quality and delivery", "xUnit tests at about 70% coverage, 300+ SonarQube findings resolved, peer code reviews, Git and Azure DevOps."],
+type Layer = { icon: IconType; name: string; tag: string; detail: string };
+const LAYERS: Layer[] = [
+  { icon: FiMonitor, name: "Presentation", tag: "React + TypeScript", detail: "Reusable components and React lazy loading for a faster first load." },
+  { icon: FiServer, name: "API", tag: "ASP.NET Core", detail: "REST endpoints for business workflows, with role-based access across user roles." },
+  { icon: FiDatabase, name: "Data", tag: "SQL Server", detail: "Master, mapping and transaction tables, stored procedures, tuned queries and indexes." },
+  { icon: FiFolder, name: "Files", tag: "Azure Blob", detail: "Application file management." },
+  { icon: FiRadio, name: "Real-time", tag: "PubNub · Twilio · FCM", detail: "Live status updates, third-party communication and push notifications in the earlier leave work." },
+  { icon: FiZap, name: "Caching & queues", tag: "None claimed", detail: "Performance came from indexing and query tuning, lazy loading and frontend optimisation." },
+  { icon: FiShield, name: "Quality", tag: "xUnit · SonarQube", detail: "About 70% coverage, 300+ findings resolved, peer reviews, Git and Azure DevOps." },
 ];
 
-const WHY = "A relational core fits this workload: leave and scheduling data is transactional, so SQL Server with stored procedures gives integrity guarantees, set-based performance and a stable contract for web and mobile clients. A document store would add schema flexibility this domain did not need, at the cost of weaker multi-table consistency. Managed pub/sub (PubNub) trades some vendor dependency and per-message cost for not running and scaling WebSocket infrastructure in-house. Keeping the system a modular ASP.NET Core API with dependency injection, rather than splitting into microservices, kept deployment, debugging and testing simple for a team of this size.";
+/* VERIFY: pros and cons describe the trade-offs of each choice, not decisions you documented. Edit to match. */
+const TRADEOFFS = [
+  { choice: "SQL Server + stored procedures", over: "over a document store", win: "Integrity and set-based speed for transactional leave and scheduling data.", cost: "Less schema flexibility." },
+  { choice: "PubNub managed pub/sub", over: "over self-hosted WebSockets", win: "Live updates without running socket infrastructure.", cost: "Vendor dependency and per-message cost." },
+  { choice: "Modular ASP.NET Core API", over: "over microservices", win: "Simple to deploy, debug and test for a team this size.", cost: "Scales as one unit until it needs splitting." },
+];
 
-/* VERIFY: items 2 and 3 are inferences about how the system behaved. Edit to match reality. */
+/* VERIFY: the second and third scenarios are inferences about system behaviour. Edit to match reality. */
 const EDGE = [
-  ["Real-time connection loss.", "The API stays the source of truth. After a reconnect the UI re-fetches current state, so a missed PubNub event cannot leave a stale status on screen."],
-  ["Third-party outages.", "The database change commits first and PubNub or Twilio calls are treated as side effects, so a provider failure does not roll back or block the business operation."],
-  ["Time zones.", "Schedules and notifications are rendered per configured local time zone, so recurring events land at the right local time across regions."],
+  { icon: FiWifiOff, title: "Connection drops", breaks: "A real-time event is missed.", fix: "The API is the source of truth; after reconnect the UI re-fetches current state." },
+  { icon: FiCloudOff, title: "Provider outage", breaks: "PubNub or Twilio is down.", fix: "The database change commits first and notifications are side effects, so the operation never rolls back." },
+  { icon: FiGlobe, title: "Time zones", breaks: "Users sit in different regions.", fix: "Schedules and notifications render per configured local time zone." },
 ];
+
+function LayerExplorer() {
+  const [i, setI] = useState(0);
+  const L = LAYERS[i];
+  return (
+    <div className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
+      <div role="tablist" aria-orientation="vertical" className="flex flex-col gap-2">
+        {LAYERS.map((l, n) => (
+          <button key={l.name} role="tab" aria-selected={n === i} onClick={() => setI(n)} onFocus={() => setI(n)}
+            onPointerEnter={(e) => { if (e.pointerType === "mouse") setI(n); }}
+            style={{ marginLeft: n === i ? 0 : 12 }}
+            className={`flex items-center gap-3 border-[3px] border-black px-3 py-2 text-left shadow-[3px_3px_0_#d9822b] transition-all duration-200 ${n === i ? "bg-cyan-400 text-black" : "bg-amber-400/90 text-black hover:bg-amber-300"}`}>
+            <l.icon className="h-5 w-5 shrink-0" />
+            <span className="font-comic text-lg tracking-wider">{l.name}</span>
+            <span className="ml-auto text-[11px] font-semibold opacity-75">{l.tag}</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center border-[3px] border-cyan-400 bg-[#0d2428] p-6 shadow-[6px_6px_0_#0b6b73]">
+        <AnimatePresence mode="wait">
+          <motion.div key={L.name} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+            <L.icon className="h-10 w-10 text-cyan-300" />
+            <div className="mt-3 font-comic text-3xl tracking-wider text-white">{L.name}</div>
+            <div className="mt-1 inline-block border-2 border-black bg-amber-400 px-2 text-xs font-semibold text-black">{L.tag}</div>
+            <p className="mt-4 text-sm leading-relaxed text-zinc-300">{L.detail}</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function EdgeCard({ e }: { e: (typeof EDGE)[number] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
+      className="flex flex-col gap-3 border-[3px] border-amber-500 bg-[#1f160d] p-4 text-left shadow-[5px_5px_0_#5a3412] transition-transform hover:-translate-y-1">
+      <div className="flex items-center gap-2 font-comic text-xl tracking-wider text-white"><e.icon className="h-5 w-5 text-cyan-300" />{e.title}</div>
+      <div className="text-sm text-zinc-400"><span className="mr-2 border border-black bg-amber-400 px-1.5 font-comic text-xs text-black">BREAKS</span>{e.breaks}</div>
+      <AnimatePresence initial={false}>
+        {open ? (
+          <motion.div key="fix" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="text-sm text-zinc-200"><span className="mr-2 border border-black bg-cyan-400 px-1.5 font-comic text-xs text-black">FIX</span>{e.fix}</div>
+          </motion.div>
+        ) : (
+          <span key="hint" className="text-xs text-cyan-300">Tap to see the fix</span>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
+const SubHead = ({ children }: { children: string }) => (
+  <h4 className="mb-4 mt-10 font-comic text-2xl tracking-wider text-white">{children}</h4>
+);
 
 export default function ArchitectureDiagrams() {
   const [id, setId] = useState("arch");
@@ -121,30 +184,10 @@ export default function ArchitectureDiagrams() {
         {"note" in t && t.note && <p className="mt-1 text-xs text-zinc-500">{t.note}</p>}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="border-[3px] border-amber-500 bg-[#1f160d] p-5 shadow-[6px_6px_0_#5a3412]">
-          <h4 className="font-comic text-2xl tracking-wider text-white">Architecture breakdown</h4>
-          <dl className="mt-3 space-y-3 text-sm">
-            {BREAKDOWN.map(([k, v]) => (
-              <div key={k}><dt className="font-comic tracking-wider text-amber-400">{k}</dt><dd className="leading-relaxed text-zinc-300">{v}</dd></div>
-            ))}
-          </dl>
-        </div>
-        <div className="flex flex-col gap-6">
-          <div className="border-[3px] border-amber-500 bg-[#1f160d] p-5 shadow-[6px_6px_0_#5a3412]">
-            <h4 className="font-comic text-2xl tracking-wider text-white">The why: trade-offs</h4>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-300">{WHY}</p>
-          </div>
-          <div className="border-[3px] border-cyan-400 bg-[#0d2428] p-5 shadow-[6px_6px_0_#0b6b73]">
-            <h4 className="font-comic text-2xl tracking-wider text-white">Edge cases handled</h4>
-            <ul className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-300">
-              {EDGE.map(([h, b]) => (
-                <li key={h} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rotate-45 bg-amber-500" /><span><b className="text-cyan-300">{h}</b> {b}</span></li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+      <SubHead>Architecture breakdown</SubHead>
+      <LayerExplorer />
+      <SubHead>Edge cases handled</SubHead>
+      <div className="grid gap-4 md:grid-cols-3">{EDGE.map((e) => <EdgeCard key={e.title} e={e} />)}</div>
     </section>
   );
 }

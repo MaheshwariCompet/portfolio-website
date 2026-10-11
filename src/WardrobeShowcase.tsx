@@ -19,7 +19,7 @@ const FACES: Face[] = [
   { key: "how", label: "How it works" },
 ];
 const TECH = ["React", "TypeScript", "Tailwind", "Python", "FastAPI", "Gemini", "Claude", "Prompt engineering"]; // verify against the project
-const AUTO_MS = 3500; // time each face stays in view
+const AUTO_MS = 1500; // time each face stays in view
 
 const Block = ({ icon: Icon, label, title, text }: { icon: IconType; label: string; title: string; text: string }) => (
   <div className="flex flex-col gap-1.5">

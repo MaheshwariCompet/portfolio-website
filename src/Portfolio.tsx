@@ -12,6 +12,7 @@ import {
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 import WardrobeShowcase from "./WardrobeShowcase";
 import ArchitectureDiagrams from "./ArchitectureDiagrams";
+import MissionBoard from "./MissionBoard";
 import SkillWheel from "./SkillWheel";
 
 /* ===== Edit these ===== */
@@ -46,31 +47,6 @@ const METRICS = [
   { value: 300, suffix: "+", decimals: 0, label: "SonarQube issues resolved" },
 ];
 
-const TIMELINE = [
-  {
-    title: "Senior Engineer (from Trainee)",
-    org: "Eleviant Tech · CTG Group",
-    period: "May 2022 – Oct 2025",
-    points: [
-      "Built enterprise full-stack apps across React, .NET, SQL Server and Azure for global clients.",
-      "Designed RESTful APIs with ASP.NET Core, EF, LINQ and stored procedures for scheduling and leave management.",
-      "Shipped real-time status updates via PubNub and Twilio-enabled communication workflows.",
-      "Ran code reviews, mentored juniors and wrote technical documentation.",
-      "Participated in sprint planning, refinement, daily stand-ups, reviews and retrospectives.",
-      "Collaborated closely with cross-functional teams to deliver features on time while maintaining high engineering standards.",
-    ],
-  },
-  {
-    title: "Structured professional development",
-    org: "NexByte Solutions · project-based learning",
-    period: "2026 – Present",
-    points: [
-      "Structured learning in Agile and leadership fundamentals, AI-assisted development, prompt engineering, RAG and Vibe Coding through guided hands-on projects.",
-      "Refreshing .NET, React, Azure, REST API, microservices, CI/CD, performance, security and system design through JD-specific preparation and edge-case analysis.",
-      "Building project narratives, STAR stories and technical documentation to support a confident return to a full-time engineering role.",
-    ],
-  },
-];
 
 const SKILLS: { group: string; icon: IconType; tags: string[] }[] = [
   { group: "Frontend", icon: FiLayers, tags: ["React.js", "TypeScript", "JavaScript", "HTML5", "CSS3", "Tailwind CSS", "Bootstrap", "DevExpress"] },
@@ -325,23 +301,7 @@ function Experience() {
         ))}
       </div>
 
-      <div className="space-y-6 border-l border-cyan-500/20 pl-8">
-        {TIMELINE.map((t, i) => (
-          <motion.article key={t.title}
-            initial={{ opacity: 0, x: -40, scale: 0.94 }} whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: true, margin: "-80px" }} transition={{ ...spring, delay: i * 0.1 }}
-            className={`relative rounded-sm p-6 md:p-8 ${glass}`}>
-            <span className="absolute -left-[41px] top-8 h-3 w-3 rounded-full bg-cyan-500 shadow-[4px_4px_0_#5a3412]" />
-            <h3 className="font-comic font-normal tracking-wider text-3xl  text-white md:text-2xl">{t.title}</h3>
-            <div className="mt-1 text-sm text-cyan-300">{t.org} <span className="text-zinc-600">|</span> {t.period}</div>
-            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-zinc-400">
-              {t.points.map((pt) => (
-                <li key={pt} className="flex gap-3"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-cyan-500" />{pt}</li>
-              ))}
-            </ul>
-          </motion.article>
-        ))}
-      </div>
+      <MissionBoard />
       <ArchitectureDiagrams />
     </>
   );
