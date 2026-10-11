@@ -91,13 +91,6 @@ const LAYERS: Layer[] = [
   { icon: FiShield, name: "Quality", tag: "xUnit · SonarQube", detail: "About 70% coverage, 300+ findings resolved, peer reviews, Git and Azure DevOps." },
 ];
 
-/* VERIFY: pros and cons describe the trade-offs of each choice, not decisions you documented. Edit to match. */
-const TRADEOFFS = [
-  { choice: "SQL Server + stored procedures", over: "over a document store", win: "Integrity and set-based speed for transactional leave and scheduling data.", cost: "Less schema flexibility." },
-  { choice: "PubNub managed pub/sub", over: "over self-hosted WebSockets", win: "Live updates without running socket infrastructure.", cost: "Vendor dependency and per-message cost." },
-  { choice: "Modular ASP.NET Core API", over: "over microservices", win: "Simple to deploy, debug and test for a team this size.", cost: "Scales as one unit until it needs splitting." },
-];
-
 /* VERIFY: the second and third scenarios are inferences about system behaviour. Edit to match reality. */
 const EDGE = [
   { icon: FiWifiOff, title: "Connection drops", breaks: "A real-time event is missed.", fix: "The API is the source of truth; after reconnect the UI re-fetches current state." },
